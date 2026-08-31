@@ -55,7 +55,7 @@ gh workflow run build.yml -f tag=v0.10
 - Kernel module (`PSP_MODULE_KERNEL`) — required for `scePower*` and framebuffer access
 - Renders via `sceDisplayGetFrameBuf()` with manual alpha blending
 - No libc in hot paths; `strtoul`-style discipline per PSP PRX best practice
-- GCC 14 compatible (warnings suppressed, `psp_compat.h` stub for `SceLoadCoreExecFileInfo`)
+- GCC 14 compatible (warnings suppressed; modern pspdev SDK defines `SceLoadCoreExecFileInfo` natively)
 
 ## License
 

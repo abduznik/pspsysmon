@@ -4,8 +4,6 @@
  * Reads CPU clock, RAM usage, battery status from PSP kernel APIs.
  */
 
-#include "psp_compat.h"
-
 #include <pspkernel.h>
 #include <pspsysmem.h>
 #include <psppower.h>

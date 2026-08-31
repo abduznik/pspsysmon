@@ -9,8 +9,6 @@
  * License: MIT
  */
 
-#include "psp_compat.h"
-
 #include <pspkernel.h>
 #include <pspdisplay.h>
 #include <psppower.h>

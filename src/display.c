@@ -6,8 +6,6 @@
  * Built-in 4x6 bitmap font for text rendering.
  */
 
-#include "psp_compat.h"
-
 #include <pspkernel.h>
 #include <pspdisplay.h>
 #include <string.h>

@@ -5,8 +5,6 @@
  *   ms0:/PSP/SYSTEM/pspsysmon.cfg
  */
 
-#include "psp_compat.h"
-
 #include <pspkernel.h>
 #include <pspfileio.h>
 #include <string.h>
