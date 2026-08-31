@@ -30,13 +30,16 @@ PRX_EXPORTS     := exports.exp
 USE_PSPSDK_LIBC = 1
 USE_PSPSDK_LIBS = 1
 
-PSPSDK := $(shell psp-config --pspsdk-path)
-include $(PSPSDK)/lib/build_prx.mak
+PSPSDK := $(shell psp-config --pspsdk-path 2>/dev/null)
+# Non-fatal: allows 'make pack' on hosts without pspdev (CI packaging step)
+-include $(PSPSDK)/lib/build_prx.mak
 
 release: clean all
 	@echo "==> Built $(TARGET).prx (v$(RELVER))"
 
-pack: all
+# pack must NOT depend on all: CI runs it on the host (no pspdev SDK).
+# The PRX is produced by the Docker build step and persists in the workspace.
+pack:
 	mkdir -p $(BUILD_DIR)/temp/seplugins
 	cp $(TARGET).prx $(BUILD_DIR)/temp/seplugins/
 	echo "ms0:/seplugins/$(TARGET).prx 1" > $(BUILD_DIR)/temp/seplugins/game.txt
