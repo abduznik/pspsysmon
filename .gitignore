@@ -1,0 +1,8 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.elf
+pspsysmon.prx
+*.zip
+.PSPSDK

@@ -1,0 +1,60 @@
+name: Build & Release PRX
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create (e.g. v0.10)'
+        required: true
+        default: 'v0.10'
+  push:
+    branches: [main, master, feat/*]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build PRX via Docker
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" -w "/src" pspdev/pspdev make release
+
+      - name: Verify PRX artifact exists
+        run: |
+          test -f pspsysmon.prx || (echo "FAIL: pspsysmon.prx not produced" && exit 1)
+          ls -la pspsysmon.prx
+          echo "prx_size=$(stat -c%s pspsysmon.prx)" >> "$GITHUB_OUTPUT"
+        id: verify
+
+      - name: Package release (zip on host — pspdev image has no zip)
+        run: |
+          command -v zip >/dev/null 2>&1 || (sudo apt-get update -qq && sudo apt-get install -y -qq zip)
+          make pack
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts
+          cp pspsysmon.prx artifacts/
+          find build -name "*.zip" -exec cp {} artifacts/ \;
+          ls -la artifacts/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pspsysmon-build
+          path: artifacts/
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+          files: artifacts/*
+          generate_release_notes: true
