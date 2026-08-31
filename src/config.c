@@ -6,7 +6,7 @@
  */
 
 #include <pspkernel.h>
-#include <pspfileio.h>
+#include <pspiofilemgr.h>
 #include <string.h>
 
 #include "config.h"
