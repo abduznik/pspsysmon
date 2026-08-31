@@ -32,12 +32,19 @@ static volatile int overlay_enabled = 1;
 
 static SceUID main_thread_id = -1;
 
-/* ── Button callback (kernel-level) ────────────────────────── */
+/* ── Button polling (toggle: L+R+START) ────────────────────── */
 
-static void button_handler(SceUInt32 buf, void *arg)
+static u32 prev_buttons = 0;
+
+static void poll_buttons(void)
 {
-    /* L+R+START = toggle overlay */
-    if ((buf & (PSP_CTRL_LTRIGGER | PSP_CTRL_RTRIGGER | PSP_CTRL_START)) ==
+    SceCtrlData pad;
+    sceCtrlPeekBufferPositive(&pad, 1);
+
+    u32 pressed = pad.Buttons & ~prev_buttons;
+    prev_buttons = pad.Buttons;
+
+    if ((pressed & (PSP_CTRL_LTRIGGER | PSP_CTRL_RTRIGGER | PSP_CTRL_START)) ==
         (PSP_CTRL_LTRIGGER | PSP_CTRL_RTRIGGER | PSP_CTRL_START)) {
         overlay_enabled = !overlay_enabled;
     }
@@ -57,6 +64,7 @@ static int display_thread(SceSize args, void *argp)
     frame_stats_init(&fps);
 
     while (running) {
+        poll_buttons();
         /* Sample system data every frame */
         system_info_update(&sys);
         frame_stats_update(&fps);
@@ -81,9 +89,6 @@ int module_start(SceSize args, void *argp)
 
     config_load();
 
-    /* Register button handler for toggle */
-    sceCtrlRegisterButtonCallback(0, button_handler, NULL);
-
     /* Start display thread at high priority */
     main_thread_id = sceKernelCreateThread(
         "SysMonDisplay",
@@ -107,9 +112,6 @@ int module_stop(SceSize args, void *argp)
     (void)argp;
 
     running = 0;
-
-    /* Unregister button handler */
-    sceCtrlUnregisterButtonCallback(0, button_handler);
 
     /* Wait for display thread to finish */
     if (main_thread_id >= 0) {
